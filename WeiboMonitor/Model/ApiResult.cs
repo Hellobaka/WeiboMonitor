@@ -1,4 +1,8 @@
-﻿namespace WeiboMonitor.Model
+﻿using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
+using System;
+
+namespace WeiboMonitor.Model
 {
     public class ApiResult<T>
     {

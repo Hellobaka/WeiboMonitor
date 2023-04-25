@@ -57,6 +57,7 @@ namespace WeiboMonitor
                     update = item.CheckUpdate();
                     if (update != null)
                     {
+                        item.DownloadPic(update);
                         pic = DrawTimeLine.Draw(update);
                     }
                 }

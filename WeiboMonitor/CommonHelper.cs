@@ -10,9 +10,9 @@ namespace WeiboMonitor
     public static class CommonHelper
     {
         public static string Cookie { get; set; } = "";
-      
+
         public static string UA { get; set; } = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/111.0.0.0 Safari/537.36 Edg/111.0.1661.62";
-       
+
         public static async Task<string> Get(string url)
         {
             try

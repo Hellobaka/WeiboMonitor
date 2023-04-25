@@ -1,8 +1,9 @@
 ﻿using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
-using System.Text;
 using WeiboMonitor.Model;
 
 namespace WeiboMonitor.API
@@ -27,7 +28,7 @@ namespace WeiboMonitor.API
             string url = $"https://weibo.com/ajax/statuses/mymblog?uid={UID}&page={page}";
             string text = CommonHelper.Get(url).Result;
             ApiResult<TimeLine_Object[]> apiResult = new();
-            if(text.StartsWith("{") is false)
+            if (text.StartsWith("{") is false)
             {
                 apiResult.Success = false;
                 apiResult.Message = "Cookie失效";
@@ -35,7 +36,14 @@ namespace WeiboMonitor.API
             }
             try
             {
-                TimeLine json = JsonConvert.DeserializeObject<TimeLine>(text);
+                var setting = new JsonSerializerSettings
+                {
+                    Converters = new List<JsonConverter>
+                    {
+                        new TimeLineJsonConverter(),
+                    }
+                };
+                TimeLine json = JsonConvert.DeserializeObject<TimeLine>(text, setting);
                 apiResult.Object = json.data.list;
                 if (json == null || json.data == null || json.data.list == null)
                 {
@@ -43,7 +51,7 @@ namespace WeiboMonitor.API
                     apiResult.Message = "解析失败";
                     return apiResult;
                 }
-                if(json.data.list.Length > 0)
+                if (json.data.list.Length > 0)
                 {
                     UserName = json.data.list.First().user.screen_name;
                 }
@@ -61,7 +69,7 @@ namespace WeiboMonitor.API
         {
             var ls = GetTimeLineList();
             long maxID = GetMaxID(ls.Object);
-            if(maxID != 0 && maxID != LastID)
+            if (maxID != 0 && maxID != LastID)
             {
                 LastID = maxID;
                 return ls.Object.First(x => x.id == LastID);
@@ -69,6 +77,59 @@ namespace WeiboMonitor.API
             return null;
         }
 
-        private static long GetMaxID(TimeLine_Object[] ls) => (long)(ls.OrderByDescending(x => x.id).FirstOrDefault()?.id);
+        public void DownloadPic(TimeLine_Object obj)
+        {
+            if (obj == null)
+            {
+                return;
+            }
+            _ = CommonHelper.DownloadFile(obj.user.avatar_large, Path.Combine(UpdateChecker.BasePath, "tmp")).Result;
+            if (obj.pic_infos != null)
+            {
+                foreach (var item in obj.pic_infos)
+                {
+                    _ = CommonHelper.DownloadFile(item.large.url, Path.Combine(UpdateChecker.BasePath, "tmp")).Result;
+                }
+            }
+        }
+
+        private static long GetMaxID(TimeLine_Object[] ls)
+        {
+            return (long)(ls.OrderByDescending(x => x.id).FirstOrDefault()?.id);
+        }
+    }
+
+    public class TimeLineJsonConverter : JsonConverter
+    {
+        public override bool CanConvert(Type objectType)
+        {
+            return objectType == typeof(MainPicInfo);
+        }
+
+        public override object ReadJson(JsonReader reader, Type objectType, object existingValue, JsonSerializer serializer)
+        {
+            var token = JToken.Load(reader);
+            if (token.Children().Any(x =>
+            {
+                return x is JObject && x["pic_id"] != null;
+            }))
+            {
+                List<MainPicInfo> picInfos = new();
+                foreach (var item in token.Children())
+                {
+                    if (item is JObject)
+                    {
+                        picInfos.Add(JsonConvert.DeserializeObject<MainPicInfo>(item.ToString()));
+                    }
+                }
+                return picInfos;
+            }
+            return null;
+        }
+
+        public override void WriteJson(JsonWriter writer, object value, JsonSerializer serializer)
+        {
+
+        }
     }
 }

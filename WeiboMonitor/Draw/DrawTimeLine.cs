@@ -10,6 +10,7 @@ namespace WeiboMonitor.Draw
     {
         public static string Draw(TimeLine_Object timeline)
         {
+            Bitmap bitmap = new(632, 10000);
             return null;
         }
     }
