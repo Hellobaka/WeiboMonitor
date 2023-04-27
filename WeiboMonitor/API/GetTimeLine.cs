@@ -4,6 +4,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Reflection;
 using WeiboMonitor.Model;
 
 namespace WeiboMonitor.API
@@ -25,8 +26,15 @@ namespace WeiboMonitor.API
 
         public ApiResult<TimeLine_Object[]> GetTimeLineList(int page = 1)
         {
+            LogHelper.Info("刷新微博列表", $"UID={UID}, Name={UserName}, Page={page}");
             string url = $"https://weibo.com/ajax/statuses/mymblog?uid={UID}&page={page}";
-            string text = CommonHelper.Get(url).Result;
+            string text = CommonHelper.Get(url, TokenManager.GenerateCookie()).Result;
+            //string text = File.ReadAllText("demo.json");
+            if(text.StartsWith("{") is false)
+            {
+                TokenManager.UpdateToken();
+                text = CommonHelper.Get(url, TokenManager.GenerateCookie()).Result;
+            }
             ApiResult<TimeLine_Object[]> apiResult = new();
             if (text.StartsWith("{") is false)
             {
@@ -36,20 +44,18 @@ namespace WeiboMonitor.API
             }
             try
             {
-                var setting = new JsonSerializerSettings
-                {
-                    Converters = new List<JsonConverter>
-                    {
-                        new TimeLineJsonConverter(),
-                    }
-                };
-                TimeLine json = JsonConvert.DeserializeObject<TimeLine>(text, setting);
+                TimeLine json = JsonConvert.DeserializeObject<TimeLine>(text);
                 apiResult.Object = json.data.list;
                 if (json == null || json.data == null || json.data.list == null)
                 {
                     apiResult.Success = false;
                     apiResult.Message = "解析失败";
                     return apiResult;
+                }
+                LogHelper.Info("刷新微博列表", $"拉取成功");
+                foreach (var item in json.data.list)
+                {
+                    UpdatePicInfos(item);
                 }
                 if (json.data.list.Length > 0)
                 {
@@ -61,8 +67,26 @@ namespace WeiboMonitor.API
             {
                 apiResult.Success = false;
                 apiResult.Message = $"解析失败：{e.Message}";
+                LogHelper.Info("解析失败", e.Message);
                 return apiResult;
             }
+        }
+
+        private void UpdatePicInfos(TimeLine_Object json)
+        {
+            if (json == null || json.pic_infos == null)
+            {
+                return;
+            }
+            List<MainPicInfo> picInfos = new();
+            foreach (var item in (json.pic_infos as JToken).Children())
+            {
+                if (item is JProperty jP)
+                {
+                    picInfos.Add(JsonConvert.DeserializeObject<MainPicInfo>(jP.Value.ToString()));
+                }
+            }
+            json.pic_info = picInfos.ToArray();
         }
 
         public TimeLine_Object CheckUpdate()
@@ -84,9 +108,9 @@ namespace WeiboMonitor.API
                 return;
             }
             _ = CommonHelper.DownloadFile(obj.user.avatar_large, Path.Combine(UpdateChecker.BasePath, "tmp")).Result;
-            if (obj.pic_infos != null)
+            if (obj.pic_info != null)
             {
-                foreach (var item in obj.pic_infos)
+                foreach (var item in obj.pic_info)
                 {
                     _ = CommonHelper.DownloadFile(item.large.url, Path.Combine(UpdateChecker.BasePath, "tmp")).Result;
                 }

@@ -9,17 +9,18 @@ namespace WeiboMonitor
 {
     public static class CommonHelper
     {
-        public static string Cookie { get; set; } = "";
-
         public static string UA { get; set; } = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/111.0.0.0 Safari/537.36 Edg/111.0.1661.62";
 
-        public static async Task<string> Get(string url)
+        public static async Task<string> Get(string url, string cookie = "")
         {
             try
             {
                 using var http = new HttpClient();
                 http.DefaultRequestHeaders.Add("user-agent", UA);
-                http.DefaultRequestHeaders.Add("cookie", Cookie);
+                if (!string.IsNullOrEmpty(cookie))
+                {
+                    http.DefaultRequestHeaders.Add("cookie", cookie);
+                }
                 var r = await http.GetAsync(url);
                 r.Content.Headers.ContentType.CharSet = "UTF-8";
                 return await r.Content.ReadAsStringAsync();
@@ -27,6 +28,23 @@ namespace WeiboMonitor
             catch (Exception e)
             {
                 LogHelper.Info("Get", e.Message);
+                return string.Empty;
+            }
+        }
+
+        public static async Task<string> Post(string url, HttpContent body)
+        {
+            try
+            {
+                using var http = new HttpClient();
+                http.DefaultRequestHeaders.Add("user-agent", UA);
+                var r = await http.PostAsync(url, body);
+                r.Content.Headers.ContentType.CharSet = "UTF-8";
+                return await r.Content.ReadAsStringAsync();
+            }
+            catch (Exception e)
+            {
+                LogHelper.Info("Post", e.Message);
                 return string.Empty;
             }
         }
@@ -84,7 +102,7 @@ namespace WeiboMonitor
 
         public static string GetFileNameFromURL(this string url)
         {
-            return url.Split('/').Last();
+            return url.Split('/').Last().Split('?').First();
         }
 
         public static string ParseNum2Chinese(this int num)

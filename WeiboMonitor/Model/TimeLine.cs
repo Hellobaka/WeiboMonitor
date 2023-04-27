@@ -45,7 +45,8 @@ namespace WeiboMonitor.Model
         public Pic_Focus_Point1[] pic_focus_point { get; set; }
         public string geo { get; set; }
         public int pic_num { get; set; }
-        public MainPicInfo[] pic_infos { get; set; }
+        public MainPicInfo[] pic_info { get; set; }
+        public object pic_infos { get; set; }
         public bool is_paid { get; set; }
         public string pic_bg_new { get; set; }
         public int mblog_vip_type { get; set; }
