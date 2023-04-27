@@ -28,8 +28,8 @@ namespace WeiboMonitor.API
         {
             LogHelper.Info("刷新微博列表", $"UID={UID}, Name={UserName}, Page={page}");
             string url = $"https://weibo.com/ajax/statuses/mymblog?uid={UID}&page={page}";
-            string text = CommonHelper.Get(url, TokenManager.GenerateCookie()).Result;
-            //string text = File.ReadAllText("demo.json");
+            //string text = CommonHelper.Get(url, TokenManager.GenerateCookie()).Result;
+            string text = File.ReadAllText("demo.json");
             if(text.StartsWith("{") is false)
             {
                 TokenManager.UpdateToken();
@@ -120,40 +120,6 @@ namespace WeiboMonitor.API
         private static long GetMaxID(TimeLine_Object[] ls)
         {
             return (long)(ls.OrderByDescending(x => x.id).FirstOrDefault()?.id);
-        }
-    }
-
-    public class TimeLineJsonConverter : JsonConverter
-    {
-        public override bool CanConvert(Type objectType)
-        {
-            return objectType == typeof(MainPicInfo);
-        }
-
-        public override object ReadJson(JsonReader reader, Type objectType, object existingValue, JsonSerializer serializer)
-        {
-            var token = JToken.Load(reader);
-            if (token.Children().Any(x =>
-            {
-                return x is JObject && x["pic_id"] != null;
-            }))
-            {
-                List<MainPicInfo> picInfos = new();
-                foreach (var item in token.Children())
-                {
-                    if (item is JObject)
-                    {
-                        picInfos.Add(JsonConvert.DeserializeObject<MainPicInfo>(item.ToString()));
-                    }
-                }
-                return picInfos;
-            }
-            return null;
-        }
-
-        public override void WriteJson(JsonWriter writer, object value, JsonSerializer serializer)
-        {
-
         }
     }
 }

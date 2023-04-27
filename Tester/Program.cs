@@ -1,4 +1,5 @@
 ﻿using WeiboMonitor.API;
+using WeiboMonitor.Draw;
 
 namespace Tester
 {
@@ -12,6 +13,7 @@ namespace Tester
             if (item != null)
             {
                 timeLine.DownloadPic(item);
+                DrawTimeLine.Draw(item);
             }
         }
     }
