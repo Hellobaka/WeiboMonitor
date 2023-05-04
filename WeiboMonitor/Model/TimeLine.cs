@@ -5,6 +5,19 @@ using System.Text;
 namespace WeiboMonitor.Model
 {
 
+    public class LongTweet
+    {
+        public int ok { get; set; }
+        public int http_code { get; set; }
+        public LongTweetData data { get; set; }
+    }
+
+    public class LongTweetData
+    {
+        public string longTextContent { get; set; }
+        public Topic_Struct[] topic_struct { get; set; }
+    }
+
     public class TimeLine
     {
         public TimeLine_Data data { get; set; }
@@ -87,7 +100,7 @@ namespace WeiboMonitor.Model
 
     public class User
     {
-        public int id { get; set; }
+        public long id { get; set; }
         public string idstr { get; set; }
         public int pc_new { get; set; }
         public string screen_name { get; set; }
@@ -283,7 +296,7 @@ namespace WeiboMonitor.Model
 
     public class User1
     {
-        public int id { get; set; }
+        public long id { get; set; }
         public string idstr { get; set; }
         public int pc_new { get; set; }
         public string screen_name { get; set; }
@@ -416,7 +429,7 @@ namespace WeiboMonitor.Model
 
     public class Author_Info
     {
-        public int id { get; set; }
+        public long id { get; set; }
         public string idstr { get; set; }
         public int pc_new { get; set; }
         public string screen_name { get; set; }

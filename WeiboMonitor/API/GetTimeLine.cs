@@ -44,6 +44,7 @@ namespace WeiboMonitor.API
             }
             try
             {
+                //File.WriteAllText("demo2.json", text);
                 TimeLine json = JsonConvert.DeserializeObject<TimeLine>(text);
                 apiResult.Object = json.data.list;
                 if (json == null || json.data == null || json.data.list == null)
