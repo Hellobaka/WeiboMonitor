@@ -5,6 +5,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Reflection;
+using System.Text.RegularExpressions;
 using WeiboMonitor.Model;
 
 namespace WeiboMonitor.API
@@ -29,8 +30,8 @@ namespace WeiboMonitor.API
             LogHelper.Info("刷新微博列表", $"UID={UID}, Name={UserName}, Page={page}");
             string url = $"https://weibo.com/ajax/statuses/mymblog?uid={UID}&page={page}";
             //string text = CommonHelper.Get(url, TokenManager.GenerateCookie()).Result;
-            string text = File.ReadAllText("demo.json");
-            if(text.StartsWith("{") is false)
+            string text = File.ReadAllText("demo3.json");
+            if (text.StartsWith("{") is false)
             {
                 TokenManager.UpdateToken();
                 text = CommonHelper.Get(url, TokenManager.GenerateCookie()).Result;
@@ -44,7 +45,7 @@ namespace WeiboMonitor.API
             }
             try
             {
-                //File.WriteAllText("demo2.json", text);
+                File.WriteAllText("demo3.json", text);
                 TimeLine json = JsonConvert.DeserializeObject<TimeLine>(text);
                 apiResult.Object = json.data.list;
                 if (json == null || json.data == null || json.data.list == null)
@@ -90,6 +91,101 @@ namespace WeiboMonitor.API
             json.pic_info = picInfos.ToArray();
         }
 
+        private void UpdateTextChain(TimeLine_Object item)
+        {
+            string text = item.text;
+            // 替换br
+            text = text.Replace("<br />", "\n");
+            // 长文
+            if (item.isLongText)
+            {
+                // 暂不验证
+                // 寻找特征点，短文本向前拉取10个字符当做特征
+                // 之后在长文本中寻找此特征，若找到则进行拼接
+                string url = $"https://weibo.com/ajax/statuses/longtext?id={item.mblogid}";
+                //string json = CommonHelper.Get(url, TokenManager.GenerateCookie()).Result;
+                string json = File.ReadAllText("demo4.json");
+                if (json.StartsWith("{") is false)
+                {
+                    TokenManager.UpdateToken();
+                    json = CommonHelper.Get(url, TokenManager.GenerateCookie()).Result;
+                }
+                if (json.StartsWith("{") is false)
+                {
+                    // Cookie失效
+                    return;
+                }
+                var longTweet = JsonConvert.DeserializeObject<LongTweet>(json);
+                if (longTweet != null && longTweet.http_code == 200)
+                {
+                    string longText = longTweet.data.longTextContent;
+                    int shortEndIndex = text.IndexOf(" ​​​ ...");// U+200B
+                    if (shortEndIndex > 0)
+                    {
+                        string sigText = text.Substring(shortEndIndex - 15, 10);
+                        int longSigIndex = longText.IndexOf(sigText, 100);
+                        if (longSigIndex > 0)
+                        {
+                            text = text.Substring(0, text.IndexOf(sigText)) + longText.Substring(longSigIndex);
+                            if(longTweet.data.url_struct.Length != 0)
+                            {
+                                foreach(var url_Struct in longTweet.data.url_struct)
+                                {
+                                    text = text.Replace(url_Struct.short_url, $"%{url_Struct.url_title}%");
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+            text = text.Replace(" ", "");// U+200B
+            // 超链接 => %%
+            text = Regex.Replace(text, "<a .*?>(.*?)<\\/a>", "%$1%");
+            // 微博表情
+            text = Regex.Replace(text, "<img.*?alt=\"(.*?)\".*src=\"(.*?)\" \\/>", "{img$2,alt$1}");
+            // 其余html标签
+            text = Regex.Replace(text, "<.*?>", "");
+            // 分割文本串
+            List<TextChainItem> textChains = item.TextChain;
+            bool linkFlag = false;
+            string textItem = "";
+            foreach (var c in text)
+            {
+                if (c == '%')
+                {
+                    if (linkFlag)
+                    {
+                        textChains.Add(new TextChainItem { Text = textItem, LinkFlag = true });
+                        textItem = "";
+                        linkFlag = false;
+                    }
+                    else
+                    {
+                        if (!string.IsNullOrEmpty(textItem))
+                        {
+                            textChains.Add(new TextChainItem { Text = textItem, LinkFlag = false });
+                        }
+                        textItem = "";
+                        linkFlag = true;
+                    }
+                    continue;
+                }
+                textItem += c;
+                // 过滤表情
+                var match = Regex.Match(textItem, "{img(.*),alt(.*)}");
+                if (match.Groups.Count == 3)
+                {
+                    textChains.Add(new TextChainItem { Text = textItem.Replace(match.Groups[0].Value, ""), LinkFlag = linkFlag });
+                    textChains.Add(new TextChainItem { ImageURL = match.Groups[1].Value, ImageAlt = match.Groups[2].Value });
+                    textItem = "";
+                }
+            }
+            if (!string.IsNullOrEmpty(textItem))
+            {
+                textChains.Add(new TextChainItem { Text = textItem, LinkFlag = linkFlag });
+            }
+        }
+
         public TimeLine_Object CheckUpdate()
         {
             var ls = GetTimeLineList();
@@ -97,7 +193,9 @@ namespace WeiboMonitor.API
             if (maxID != 0 && maxID != LastID)
             {
                 LastID = maxID;
-                return ls.Object.First(x => x.id == LastID);
+                var obj = ls.Object.First(x => x.id == LastID);
+                UpdateTextChain(obj);
+                return obj;
             }
             return null;
         }
@@ -115,6 +213,10 @@ namespace WeiboMonitor.API
                 {
                     _ = CommonHelper.DownloadFile(item.large.url, Path.Combine(UpdateChecker.BasePath, "tmp")).Result;
                 }
+            }
+            foreach (var item in obj.TextChain.Where(x => x.ImageURL != null))
+            {
+                _ = CommonHelper.DownloadFile(item.ImageURL, Path.Combine(UpdateChecker.BasePath, "tmp")).Result;
             }
         }
 

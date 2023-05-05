@@ -29,8 +29,8 @@ namespace WeiboMonitor.Draw
             PointF point = new();
             DrawAvatar(item, g, ref point);
             DrawUserName(item, g, ref point);
-            DrawMainText(item, g, ref point);
-            //DrawMainData(item, g, ref point);
+            DrawText(item, g, ref point);
+            DrawData(item, g, ref point);
 
             background.Save("1.png");
             return "1.png";
@@ -64,64 +64,27 @@ namespace WeiboMonitor.Draw
             //DrawString(g, $"{time:G} · {item.region_name}", Color.FromArgb(153, 162, 170), ref point, font, 20, charGap, ref maxCharWidth, maxWidth, out charHeight);
         }
 
-        private static void DrawMainText(TimeLine_Object item, Graphics g, ref PointF point)
+        private static void DrawText(TimeLine_Object item, Graphics g, ref PointF point)
         {
-            string text = item.text;
-            // 替换br
-            text = text.Replace("<br />", "\n");
-            // 长文
-            if (item.isLongText)
-            {
-                //string url = $"https://weibo.com/ajax/statuses/longtext?id={item.mblogid}";
-                //string json = CommonHelper.Get(url, TokenManager.GenerateCookie()).Result;
-                //var longTweet = JsonConvert.DeserializeObject<LongTweet>(json);
-                //if (longTweet != null && longTweet.http_code == 200)
-                //{
-                //    text = longTweet.data.longTextContent;
-                //}
-            }
-            // 超链接 => %%
-            text = Regex.Replace(text, "<.*?>(.*?)<\\/.*?>", "%$1%");
-            text = Regex.Replace(text, "<.*?>", "");
-            // 分割超链接
-            List<(string, bool)> textChains = new();
-            bool linkFlag = false;
-            string textItem = "";
-            foreach (var c in text)
-            {
-                if (c == '%')
-                {
-                    if (linkFlag)
-                    {
-                        textChains.Add((textItem, true));
-                        textItem = "";
-                        linkFlag = false;
-                    }
-                    else
-                    {
-                        if (!string.IsNullOrEmpty(textItem))
-                        {
-                            textChains.Add((textItem, false));
-                        }
-                        textItem = "";
-                        linkFlag = true;
-                    }
-                    continue;
-                }
-                textItem += c;
-            }
-            if (!string.IsNullOrEmpty(textItem))
-            {
-                textChains.Add((textItem, false));
-            }
             // 绘制
             int left = 82;
             float charGap = -6, maxWidth = 632 - 30, maxCharWidth = 0, charHeight = 0;
             point = new(left, 75);
             Font font = new("Microsoft YaHei", 12);
-            foreach (var c in textChains)
+            foreach (var c in item.TextChain)
             {
-                DrawString(g, c.Item1, c.Item2 ? Color.FromArgb(235, 115, 80) : Color.Black, ref point, font, left, charGap, ref maxCharWidth, maxWidth, out charHeight);
+                if(c.Text != null)
+                {
+                    DrawString(g, c.Text, c.LinkFlag ? Color.FromArgb(235, 115, 80) : Color.Black, ref point, font, left, charGap, ref maxCharWidth, maxWidth, out charHeight);
+                }
+                else
+                {
+                    // 表情元素
+                    point = new PointF(point.X + 2, point.Y);
+                    Bitmap img = (Bitmap)Image.FromFile(Path.Combine(Path.Combine(UpdateChecker.BasePath, "tmp"), c.ImageURL.GetFileNameFromURL()));
+                    g.DrawImage(img, point.X, point.Y, 20, 20);
+                    point = new PointF(point.X + 20, point.Y);
+                }
             }
             point = new(left, point.Y + charHeight);
         }
@@ -140,7 +103,7 @@ namespace WeiboMonitor.Draw
             // 视频
         }
 
-        private static void DrawMainData(TimeLine_Object item, Graphics g, ref PointF point)
+        private static void DrawData(TimeLine_Object item, Graphics g, ref PointF point)
         {
             int retweet = item.reposts_count;
             int comment = item.comments_count;

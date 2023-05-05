@@ -16,6 +16,7 @@ namespace WeiboMonitor.Model
     {
         public string longTextContent { get; set; }
         public Topic_Struct[] topic_struct { get; set; }
+        public Url_Struct[] url_struct { get; set; }
     }
 
     public class TimeLine
@@ -90,6 +91,18 @@ namespace WeiboMonitor.Model
         public Retweeted_Status retweeted_status { get; set; }
         public Url_Struct[] url_struct { get; set; }
         public Page_Info page_info { get; set; }
+        public List<TextChainItem> TextChain { get; set; } = new();
+    }
+
+    public class TextChainItem
+    {
+        public string Text { get; set; }
+
+        public bool LinkFlag { get; set; }
+
+        public string ImageURL { get; set; }
+
+        public string ImageAlt { get; set; }
     }
 
     public class Visible
