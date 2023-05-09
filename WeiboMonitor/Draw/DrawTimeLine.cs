@@ -4,6 +4,7 @@ using System.Drawing;
 using System.Drawing.Drawing2D;
 using System.Drawing.Text;
 using System.IO;
+using System.Linq;
 using System.Text.RegularExpressions;
 using WeiboMonitor.Model;
 
@@ -18,7 +19,7 @@ namespace WeiboMonitor.Draw
             Bitmap main = new(652, 10000);
             using Graphics graphicsMain = Graphics.FromImage(main);
             graphicsMain.FillRectangle(new SolidBrush(Color.FromArgb(244, 245, 247)), new Rectangle(0, 0, main.Width, main.Height));
-            Bitmap background = new(632, 400);
+            Bitmap background = new(632, 900);
             using Graphics g = Graphics.FromImage(background);
             g.SmoothingMode = SmoothingMode.HighQuality;
             g.TextRenderingHint = TextRenderingHint.ClearTypeGridFit;
@@ -30,6 +31,7 @@ namespace WeiboMonitor.Draw
             DrawAvatar(item, g, ref point);
             DrawUserName(item, g, ref point);
             DrawText(item, g, ref point);
+            DrawMainImages(item, g, ref point);
             DrawData(item, g, ref point);
 
             background.Save("1.png");
@@ -91,10 +93,76 @@ namespace WeiboMonitor.Draw
 
         private static void DrawMainImages(TimeLine_Object item, Graphics g, ref PointF point)
         {
+            // 方图 => 140x140
             // gif => 不支持(第一帧 gif图标)
             // 长图
             // 九宫图
             // 多于9张图 => 全画
+            int left = 82;
+            if (item.pic_info == null || item.pic_info.Length == 0)
+            {
+                return;
+            }
+            point = new PointF(82, point.Y + 10);
+            if(item.pic_info.Length == 1)
+            {
+                Bitmap pic = (Bitmap)Image.FromFile(Path.Combine(UpdateChecker.BasePath, "tmp", item.pic_info.First().large.url.GetFileNameFromURL()));
+                if(pic == null)
+                {
+                    LogHelper.Info("DrawMainImages", $"无效图片: {item.pic_info.First().large.url.GetFileNameFromURL()}", false);
+                    return;
+                }
+                int height = pic.Height;
+                int width = pic.Width;
+                RectangleF originalRect = new(0, 0, pic.Width, pic.Height);
+                if(width > 450)
+                {
+                    width = 450;
+                    height = (int)(((float)450 / pic.Width) * pic.Height);
+                }
+                if(pic.Height > pic.Width * 3)
+                {
+                    height = width * 3;
+                    originalRect = new(0, 0, pic.Width, pic.Width * 3);
+                }
+                g.DrawImage(pic, new RectangleF(point.X, point.Y, width, height), originalRect, GraphicsUnit.Pixel);
+                point = new PointF(left, point.Y + height + 10);
+            }
+            else
+            {
+                int index = 1;
+                int smallPicWidth = 140;
+                foreach (var i in item.pic_info)
+                {
+                    Bitmap pic = (Bitmap)Image.FromFile(Path.Combine(UpdateChecker.BasePath, "tmp", i.large.url.GetFileNameFromURL()));
+                    if (pic == null)
+                    {
+                        LogHelper.Info("DrawMainImages", $"无效图片: {i.large.url.GetFileNameFromURL()}", false);
+                        continue;
+                    }
+                    int height = (int)(((float)smallPicWidth / pic.Width) * pic.Height);
+                    RectangleF originalRect = new(0, 0, pic.Width, pic.Height);
+                    if(pic.Width > pic.Height)
+                    {
+                        originalRect = new((pic.Width - pic.Height) / 2, 0, pic.Height, pic.Height);
+                    }
+                    else
+                    {
+                        originalRect = new(0, 0, pic.Width, pic.Width);
+                    }
+                    g.DrawImage(pic, new RectangleF(point.X, point.Y, smallPicWidth, smallPicWidth), originalRect, GraphicsUnit.Pixel);
+                    if(index % 3 == 0)
+                    {
+                        point = new PointF(left, point.Y + smallPicWidth + 10);
+                    }
+                    else
+                    {
+                        point = new PointF(point.X + smallPicWidth + 10, point.Y);
+                    }
+                    index++;
+                }
+                point = new PointF(left, point.Y + ((index - 1) % 3 == 0 ? 0 : smallPicWidth) + 10);// 若不是最后一个则添加一个图片大小
+            }
         }
 
         private static void DrawMainCard(TimeLine_Object item, Graphics g, ref PointF point)

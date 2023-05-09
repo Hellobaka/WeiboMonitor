@@ -650,7 +650,6 @@ namespace WeiboMonitor.Model
         public string long_url { get; set; }
         public int url_type { get; set; }
         public bool result { get; set; }
-        public Actionlog3 actionlog { get; set; }
         public string storage_type { get; set; }
         public int hide { get; set; }
         public string object_type { get; set; }

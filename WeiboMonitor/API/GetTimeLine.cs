@@ -30,7 +30,7 @@ namespace WeiboMonitor.API
             LogHelper.Info("刷新微博列表", $"UID={UID}, Name={UserName}, Page={page}");
             string url = $"https://weibo.com/ajax/statuses/mymblog?uid={UID}&page={page}";
             //string text = CommonHelper.Get(url, TokenManager.GenerateCookie()).Result;
-            string text = File.ReadAllText("demo3.json");
+            string text = File.ReadAllText("demo.json");
             if (text.StartsWith("{") is false)
             {
                 TokenManager.UpdateToken();
@@ -45,7 +45,7 @@ namespace WeiboMonitor.API
             }
             try
             {
-                File.WriteAllText("demo3.json", text);
+                //File.WriteAllText("demo3.json", text);
                 TimeLine json = JsonConvert.DeserializeObject<TimeLine>(text);
                 apiResult.Object = json.data.list;
                 if (json == null || json.data == null || json.data.list == null)
@@ -103,8 +103,8 @@ namespace WeiboMonitor.API
                 // 寻找特征点，短文本向前拉取10个字符当做特征
                 // 之后在长文本中寻找此特征，若找到则进行拼接
                 string url = $"https://weibo.com/ajax/statuses/longtext?id={item.mblogid}";
-                //string json = CommonHelper.Get(url, TokenManager.GenerateCookie()).Result;
-                string json = File.ReadAllText("demo4.json");
+                string json = CommonHelper.Get(url, TokenManager.GenerateCookie()).Result;
+                //string json = File.ReadAllText("demo4.json");
                 if (json.StartsWith("{") is false)
                 {
                     TokenManager.UpdateToken();
@@ -127,7 +127,7 @@ namespace WeiboMonitor.API
                         if (longSigIndex > 0)
                         {
                             text = text.Substring(0, text.IndexOf(sigText)) + longText.Substring(longSigIndex);
-                            if(longTweet.data.url_struct.Length != 0)
+                            if(longTweet.data.url_struct != null && longTweet.data.url_struct.Length != 0)
                             {
                                 foreach(var url_Struct in longTweet.data.url_struct)
                                 {
@@ -138,13 +138,13 @@ namespace WeiboMonitor.API
                     }
                 }
             }
-            text = text.Replace(" ", "");// U+200B
             // 超链接 => %%
             text = Regex.Replace(text, "<a .*?>(.*?)<\\/a>", "%$1%");
             // 微博表情
             text = Regex.Replace(text, "<img.*?alt=\"(.*?)\".*src=\"(.*?)\" \\/>", "{img$2,alt$1}");
             // 其余html标签
             text = Regex.Replace(text, "<.*?>", "");
+            text = text.Replace(" ", "");// U+200B
             // 分割文本串
             List<TextChainItem> textChains = item.TextChain;
             bool linkFlag = false;
