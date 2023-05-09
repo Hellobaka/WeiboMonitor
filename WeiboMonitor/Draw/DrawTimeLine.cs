@@ -182,16 +182,18 @@ namespace WeiboMonitor.Draw
             point = new(point.X, point.Y + 10);
             g.DrawImage(forwardImage, point.X, point.Y, 16, 16);
             point = new(point.X + 16 + 4, point.Y - 2);
+            var size = g.MeasureString(retweet.ToString(), font);
             g.DrawString(retweet.ToString(), font, new SolidBrush(Color.FromArgb(109, 117, 122)), point);
             // 评论
             Bitmap commentImage = (Bitmap)Image.FromFile(Path.Combine(UpdateChecker.BasePath, "Assets", "comment.png"));
-            point = new(point.X + 40, point.Y + 2);
+            point = new(point.X + 20 + size.Width, point.Y + 2);
             g.DrawImage(commentImage, point.X, point.Y, 16, 16);
             point = new(point.X + 20, point.Y - 2);
+            size = g.MeasureString(comment.ToString(), font);
             g.DrawString(comment.ToString(), font, new SolidBrush(Color.FromArgb(109, 117, 122)), point);
             // 点赞
             Bitmap likeImage = (Bitmap)Image.FromFile(Path.Combine(UpdateChecker.BasePath, "Assets", "like.png"));
-            point = new(point.X + 40, point.Y + 2);
+            point = new(point.X + 20 + size.Width, point.Y + 2);
             g.DrawImage(likeImage, point.X, point.Y, 16, 16);
             point = new(point.X + 20, point.Y - 2);
             g.DrawString(like.ToString(), font, new SolidBrush(Color.FromArgb(109, 117, 122)), point);
