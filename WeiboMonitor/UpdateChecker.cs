@@ -42,7 +42,7 @@ namespace WeiboMonitor
                         }
                         catch (Exception e)
                         {
-
+                            LogHelper.Info("更新检查失败", e.Message + e.StackTrace, false);
                         }
                     }
                 }
@@ -63,6 +63,7 @@ namespace WeiboMonitor
                         item.DownloadPic(update);
                         pic = DrawTimeLine.Draw(update);
                     }
+                    item.ReFetchFlag = false;
                 }
                 catch (Exception e)
                 {

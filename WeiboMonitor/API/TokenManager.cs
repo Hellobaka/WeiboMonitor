@@ -26,16 +26,24 @@ namespace WeiboMonitor.API
 
         public static bool UpdateToken()
         {
-            LogHelper.Info("UpdateToken", "开始刷新Token...");
-            string sub = "", subp = "";
-            bool result = GetTID(out string tid, out string confidence);
-            result = result && UpdateCookie(tid, confidence, out sub, out subp);
-            if (result)
+            try
             {
-                SubToken = sub;
-                SubpToken = subp;
+                LogHelper.Info("UpdateToken", "开始刷新Token...");
+                string sub = "", subp = "";
+                bool result = GetTID(out string tid, out string confidence);
+                result = result && UpdateCookie(tid, confidence, out sub, out subp);
+                if (result)
+                {
+                    SubToken = sub;
+                    SubpToken = subp;
+                }
+                return result && CrossDomainBoardcast(sub, subp);
             }
-            return result && CrossDomainBoardcast(sub, subp);
+            catch (Exception e)
+            {
+                LogHelper.Info("更新Token", e.Message + e.StackTrace, false);
+                return false;
+            }
         }
 
         private static bool GetTID(out string tid, out string confidence)
