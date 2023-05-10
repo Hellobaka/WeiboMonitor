@@ -16,6 +16,7 @@ namespace WeiboMonitor.Draw
         private static Font EmojiFont { get; set; } = null;
         public static string Draw(TimeLine_Object item)
         {
+            Directory.CreateDirectory(Path.Combine(UpdateChecker.PicPath, "Weibo"));
             using Bitmap background = new(632, 10000);
             using Graphics g = Graphics.FromImage(background);
             g.SmoothingMode = SmoothingMode.HighQuality;
@@ -38,8 +39,10 @@ namespace WeiboMonitor.Draw
             using Graphics graphicsMain = Graphics.FromImage(main);
             graphicsMain.FillRectangle(new SolidBrush(Color.FromArgb(244, 245, 247)), new Rectangle(0, 0, main.Width, main.Height));
             graphicsMain.DrawImage(background, new RectangleF(10, 10, background.Width, point.Y), new RectangleF(0, 0, background.Width, point.Y), GraphicsUnit.Pixel);
-            main.Save("1.png");
-            return "1.png";
+
+            string filename = $"{item.id}.png";
+            main.Save(Path.Combine(UpdateChecker.PicPath, "Weibo", filename));
+            return Path.Combine("Weibo", filename);
         }
 
         private static void DrawAvatar(TimeLine_Object item, Graphics g, ref PointF point)
