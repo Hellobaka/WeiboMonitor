@@ -16,7 +16,7 @@ namespace WeiboMonitor.API
 
         public long LastID { get; set; } = 0;
 
-        public bool ReFetchFlag { get; set; } = true;
+        public bool ReFetchFlag { get; set; } = false;
 
         public string UserName { get; set; }
 
