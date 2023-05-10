@@ -2,6 +2,7 @@
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
+using System.Net;
 using System.Net.Http;
 using System.Threading.Tasks;
 
@@ -15,12 +16,22 @@ namespace WeiboMonitor
         {
             try
             {
-                using var http = new HttpClient();
-                http.DefaultRequestHeaders.Add("user-agent", UA);
+                HttpClientHandler handler = new();
+                handler.CookieContainer = new CookieContainer();
                 if (!string.IsNullOrEmpty(cookie))
                 {
-                    http.DefaultRequestHeaders.Add("cookie", cookie);
+                    foreach(var item in cookie.Split(';'))
+                    {
+                        if(string.IsNullOrEmpty(item) is false)
+                        {
+                            string[] c = item.Split('=');
+                            handler.CookieContainer.Add(new Uri("https://weibo.com/"), new Cookie(c.First(), c.Last()));
+                        }
+                    }
                 }
+
+                using var http = new HttpClient(handler);
+                http.DefaultRequestHeaders.Add("user-agent", UA);
                 var r = await http.GetAsync(url);
                 r.Content.Headers.ContentType.CharSet = "UTF-8";
                 return await r.Content.ReadAsStringAsync();
