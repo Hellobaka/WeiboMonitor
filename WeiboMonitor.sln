@@ -5,7 +5,9 @@ VisualStudioVersion = 17.4.33122.133
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "WeiboMonitor", "WeiboMonitor\WeiboMonitor.csproj", "{F4993482-E73B-4C4F-BEE0-9D6AA529BB9A}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Tester", "Tester\Tester.csproj", "{7D7BB962-DC63-4E02-BE3B-36EAE8722E44}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Tester", "Tester\Tester.csproj", "{7D7BB962-DC63-4E02-BE3B-36EAE8722E44}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "WeiboMonitor-netframework", "WeiboMonitor-netframework\WeiboMonitor-netframework.csproj", "{C772AF89-0E70-4A7F-87A0-69B335898E66}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -21,6 +23,10 @@ Global
 		{7D7BB962-DC63-4E02-BE3B-36EAE8722E44}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{7D7BB962-DC63-4E02-BE3B-36EAE8722E44}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{7D7BB962-DC63-4E02-BE3B-36EAE8722E44}.Release|Any CPU.Build.0 = Release|Any CPU
+		{C772AF89-0E70-4A7F-87A0-69B335898E66}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{C772AF89-0E70-4A7F-87A0-69B335898E66}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{C772AF89-0E70-4A7F-87A0-69B335898E66}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{C772AF89-0E70-4A7F-87A0-69B335898E66}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
