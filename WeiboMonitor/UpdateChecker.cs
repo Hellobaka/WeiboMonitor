@@ -1,6 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Drawing;
+using System.Linq;
 using System.Threading;
 using WeiboMonitor.API;
 using WeiboMonitor.Draw;
@@ -18,10 +18,8 @@ namespace WeiboMonitor
 
         public List<GetTimeLine> TimeLines { get; set; } = new();
         public int WeiboErrCount { get; set; }
-        public string FontName { get; set; }
-        public Font Font { get; set; }
 
-        public delegate void TimeLineUpdateHandler(TimeLine_Object bangumi, string pic);
+        public delegate void TimeLineUpdateHandler(TimeLine_Object timeLine, long uid, string pic);
         public event TimeLineUpdateHandler OnTimeLineUpdate;
 
         public UpdateChecker(string basePath, string picPath)
@@ -29,6 +27,8 @@ namespace WeiboMonitor
             BasePath = basePath;
             PicPath = picPath;
             Instance = this;
+            bool flag = TokenManager.UpdateToken();
+            LogHelper.Info("刷新Token", $"结果：{flag}", flag);
             new Thread(() =>
             {
                 while (true)
@@ -83,11 +83,54 @@ namespace WeiboMonitor
                 {
                     if (update != null)
                     {
-                        OnTimeLineUpdate?.Invoke(update, pic);
+                        OnTimeLineUpdate?.Invoke(update, update.user.id, pic);
                         LogHelper.Info("微博更新", $"{item.UserName}的微博有更新，id={item.LastID}，路径={pic}");
                     }
                 }
             }
+        }
+
+        public GetTimeLine AddWeibo(long uid)
+        {
+            if (TimeLines.Any(x => x.UID == uid))
+            {
+                return TimeLines.First(x => x.UID == uid);
+            }
+            var timeLine = new GetTimeLine(uid);
+            if(timeLine.CheckUpdate() != null)
+            {
+                TimeLines.Add(timeLine);
+                return timeLine;
+            }
+            else
+            {
+                return null;
+            }
+        }
+
+        public void Start()
+        {
+            Enabled = true;
+        }
+
+        public void RemoveWeibo(int uid)
+        {
+            if (TimeLines.Any(x => x.UID == uid) is false)
+            {
+                return;
+            }
+
+            TimeLines.Remove(TimeLines.First(x => x.UID == uid));
+        }
+
+        public List<(long, string)> GetBangumiList()
+        {
+            List<(long, string)> ls = new();
+            foreach (var item in TimeLines)
+            {
+                ls.Add((item.UID, item.UserName));
+            }
+            return ls;
         }
     }
 }
