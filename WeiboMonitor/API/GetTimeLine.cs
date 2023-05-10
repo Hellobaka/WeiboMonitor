@@ -29,8 +29,8 @@ namespace WeiboMonitor.API
         {
             LogHelper.Info("刷新微博列表", $"UID={UID}, Name={UserName}, Page={page}");
             string url = $"https://weibo.com/ajax/statuses/mymblog?uid={UID}&page={page}";
-            //string text = CommonHelper.Get(url, TokenManager.GenerateCookie()).Result;
-            string text = File.ReadAllText("demo.json");
+            string text = CommonHelper.Get(url, TokenManager.GenerateCookie()).Result;
+            //string text = File.ReadAllText("demo.json");
             if (text.StartsWith("{") is false)
             {
                 TokenManager.UpdateToken();
@@ -189,6 +189,11 @@ namespace WeiboMonitor.API
         public TimeLine_Object CheckUpdate()
         {
             var ls = GetTimeLineList();
+            if(!ls.Success)
+            {
+                LogHelper.Info("检查更新", $"失败: {ls.Message}", false);
+                return null;
+            }
             long maxID = GetMaxID(ls.Object);
             if (maxID != 0 && maxID != LastID)
             {
