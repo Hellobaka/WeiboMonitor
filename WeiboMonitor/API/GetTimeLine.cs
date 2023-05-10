@@ -16,7 +16,7 @@ namespace WeiboMonitor.API
 
         public long LastID { get; set; } = 0;
 
-        public bool ReFetchFlag { get; set; }
+        public bool ReFetchFlag { get; set; } = true;
 
         public string UserName { get; set; }
 
@@ -189,13 +189,13 @@ namespace WeiboMonitor.API
         public TimeLine_Object CheckUpdate()
         {
             var ls = GetTimeLineList();
-            if(!ls.Success)
+            if (!ls.Success)
             {
                 LogHelper.Info("检查更新", $"失败: {ls.Message}", false);
                 return null;
             }
             long maxID = GetMaxID(ls.Object);
-            if (maxID != 0 && maxID != LastID)
+            if (maxID != 0 && (ReFetchFlag || maxID != LastID))
             {
                 LastID = maxID;
                 var obj = ls.Object.First(x => x.id == LastID);
@@ -227,7 +227,7 @@ namespace WeiboMonitor.API
             {
                 _ = CommonHelper.DownloadFile(obj.page_info.pic_info.pic_big?.url, Path.Combine(UpdateChecker.BasePath, "tmp")).Result;
             }
-            if(obj.retweeted_status != null)
+            if (obj.retweeted_status != null)
             {
                 UpdatePicInfos(obj.retweeted_status);
                 UpdateTextChain(obj.retweeted_status);
