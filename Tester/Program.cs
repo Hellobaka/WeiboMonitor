@@ -12,6 +12,7 @@ namespace Tester
     {
         static void Main(string[] args)
         {
+            //TokenManager.UpdateToken();
             GetTimeLine timeLine = new GetTimeLine(5762457113);
             //timeLine.GetTimeLineList();
             var item = timeLine.CheckUpdate();

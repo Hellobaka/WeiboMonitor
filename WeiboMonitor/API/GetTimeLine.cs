@@ -127,9 +127,9 @@ namespace WeiboMonitor.API
                         if (longSigIndex > 0)
                         {
                             text = text.Substring(0, text.IndexOf(sigText)) + longText.Substring(longSigIndex);
-                            if(longTweet.data.url_struct != null && longTweet.data.url_struct.Length != 0)
+                            if (longTweet.data.url_struct != null && longTweet.data.url_struct.Length != 0)
                             {
-                                foreach(var url_Struct in longTweet.data.url_struct)
+                                foreach (var url_Struct in longTweet.data.url_struct)
                                 {
                                     text = text.Replace(url_Struct.short_url, $"%{url_Struct.url_title}%");
                                 }
@@ -217,6 +217,16 @@ namespace WeiboMonitor.API
             foreach (var item in obj.TextChain.Where(x => x.ImageURL != null))
             {
                 _ = CommonHelper.DownloadFile(item.ImageURL, Path.Combine(UpdateChecker.BasePath, "tmp")).Result;
+            }
+            if (obj.page_info != null && (obj.page_info.object_type == "video" || obj.page_info.object_type == "article"))
+            {
+                _ = CommonHelper.DownloadFile(obj.page_info.pic_info.pic_big?.url, Path.Combine(UpdateChecker.BasePath, "tmp")).Result;
+            }
+            if(obj.retweeted_status != null)
+            {
+                UpdatePicInfos(obj.retweeted_status);
+                UpdateTextChain(obj.retweeted_status);
+                DownloadPic(obj.retweeted_status);
             }
         }
 

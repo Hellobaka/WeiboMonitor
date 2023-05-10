@@ -88,7 +88,7 @@ namespace WeiboMonitor.Model
         public string region_name { get; set; }
         public object[] customIcons { get; set; }
         public int repost_type { get; set; }
-        public Retweeted_Status retweeted_status { get; set; }
+        public TimeLine_Object retweeted_status { get; set; }
         public Url_Struct[] url_struct { get; set; }
         public Page_Info page_info { get; set; }
         public List<TextChainItem> TextChain { get; set; } = new();

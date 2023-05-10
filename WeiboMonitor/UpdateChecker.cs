@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Drawing;
 using System.Threading;
 using WeiboMonitor.API;
 using WeiboMonitor.Draw;
@@ -17,6 +18,8 @@ namespace WeiboMonitor
 
         public List<GetTimeLine> TimeLines { get; set; } = new();
         public int WeiboErrCount { get; set; }
+        public string FontName { get; set; }
+        public Font Font { get; set; }
 
         public delegate void TimeLineUpdateHandler(TimeLine_Object bangumi, string pic);
         public event TimeLineUpdateHandler OnTimeLineUpdate;
