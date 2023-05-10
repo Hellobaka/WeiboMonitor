@@ -89,7 +89,6 @@ namespace WeiboMonitor.Model
         public object[] customIcons { get; set; }
         public int repost_type { get; set; }
         public TimeLine_Object retweeted_status { get; set; }
-        public Url_Struct[] url_struct { get; set; }
         public Page_Info page_info { get; set; }
         public List<TextChainItem> TextChain { get; set; } = new();
     }
@@ -407,14 +406,12 @@ namespace WeiboMonitor.Model
         public Ext_Info ext_info { get; set; }
         public string next_title { get; set; }
         public string kol_title { get; set; }
-        public Play_Completion_Actions[] play_completion_actions { get; set; }
         public int video_publish_time { get; set; }
         public int play_loop_type { get; set; }
         public string author_mid { get; set; }
         public string author_name { get; set; }
         public Extra_Info extra_info { get; set; }
         public int has_recommend_video { get; set; }
-        public Video_Download_Strategy video_download_strategy { get; set; }
         public int jump_to { get; set; }
         public string online_users { get; set; }
         public int online_users_number { get; set; }
