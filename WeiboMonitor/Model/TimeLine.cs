@@ -645,7 +645,6 @@ namespace WeiboMonitor.Model
         public string page_id { get; set; }
         public string short_url { get; set; }
         public string long_url { get; set; }
-        public int url_type { get; set; }
         public bool result { get; set; }
         public string storage_type { get; set; }
         public int hide { get; set; }

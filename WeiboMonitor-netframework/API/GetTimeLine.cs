@@ -20,6 +20,8 @@ namespace WeiboMonitor.API
 
         public string UserName { get; set; }
 
+        public List<long> SentList { get; set; } = new();
+
         public GetTimeLine(long uID)
         {
             UID = uID;
@@ -198,8 +200,13 @@ namespace WeiboMonitor.API
             if (maxID != 0 && (ReFetchFlag || maxID != LastID))
             {
                 LastID = maxID;
+                if (SentList.Any(x => x == LastID))
+                {
+                    return null;
+                }
                 var obj = ls.Object.First(x => x.id == LastID);
                 UpdateTextChain(obj);
+                SentList.Add(LastID);
                 return obj;
             }
             return null;

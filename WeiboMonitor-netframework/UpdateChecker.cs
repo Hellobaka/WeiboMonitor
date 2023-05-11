@@ -114,7 +114,7 @@ namespace WeiboMonitor
             Enabled = true;
         }
 
-        public void RemoveWeibo(int uid)
+        public void RemoveWeibo(long uid)
         {
             if (TimeLines.Any(x => x.UID == uid) is false)
             {
