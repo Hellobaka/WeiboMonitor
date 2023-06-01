@@ -87,6 +87,7 @@ namespace WeiboMonitor.API
         {
             sub = null;
             subp = null;
+            tid = tid.Replace("+", "%2B").Replace("/", "%2F").Replace("=", "%3D");
             string url = $"https://passport.weibo.com/visitor/visitor?a=incarnate&t={tid}&w=2&c={confidence}&gc=&cb=cross_domain&from=weibo&_rand={new Random().NextDouble()}";
             string result = CommonHelper.Get(url).Result;
             if (string.IsNullOrEmpty(result) is false && result.StartsWith("window"))
