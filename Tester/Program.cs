@@ -2,8 +2,8 @@
 using System.Text.RegularExpressions;
 using WeiboMonitor;
 using WeiboMonitor.API;
-using WeiboMonitor.Draw;
 using WeiboMonitor.Model;
+using WeiboMonitor_netframework;
 
 namespace Tester
 {
@@ -11,14 +11,19 @@ namespace Tester
     {
         static void Main(string[] args)
         {
-            //TokenManager.UpdateToken();
+            Config config = new Config("config.json");
+            config.LoadConfig();
             GetTimeLine timeLine = new GetTimeLine(1842706721);
             //timeLine.GetTimeLineList();
             var item = timeLine.CheckUpdate();
             if (item != null)
             {
-                timeLine.DownloadPic(item);
-                DrawTimeLine.Draw(item);
+                foreach(var t in timeLine.TimeLines.Take(10))
+                {
+                    timeLine.UpdateTextChain(t);
+                    timeLine.DownloadPic(t);
+                    Console.WriteLine(timeLine.Draw(t));
+                }
             }
         }
     }
