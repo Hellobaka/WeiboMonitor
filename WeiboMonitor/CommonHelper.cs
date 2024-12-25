@@ -20,9 +20,9 @@ namespace WeiboMonitor
                 handler.CookieContainer = new CookieContainer();
                 if (!string.IsNullOrEmpty(cookie))
                 {
-                    foreach(var item in cookie.Split(';'))
+                    foreach (var item in cookie.Split(';'))
                     {
-                        if(string.IsNullOrEmpty(item) is false)
+                        if (string.IsNullOrEmpty(item) is false)
                         {
                             string[] c = item.Split('=');
                             handler.CookieContainer.Add(new Uri("https://weibo.com/"), new Cookie(c.First(), c.Last()));
@@ -119,6 +119,21 @@ namespace WeiboMonitor
         public static string ParseNum2Chinese(this int num)
         {
             return num > 10000 ? $"{num / 10000.0:f1}万" : num.ToString();
+        }
+
+        public static string ParseLongNumber(long num)
+        {
+            string numStr = num.ToString();
+            int step = 1;
+            for (int i = numStr.Length - 1; i > 0; i--)
+            {
+                if (step % 3 == 0)
+                {
+                    numStr = numStr.Insert(i, ",");
+                }
+                step++;
+            }
+            return numStr;
         }
 
         public static bool CompareNumString(string a, string b)

@@ -3,6 +3,7 @@ using System;
 using System.Collections.Generic;
 using System.Net.Http;
 using System.Text.RegularExpressions;
+using WeiboMonitor_netframework;
 
 namespace WeiboMonitor.API
 {
@@ -14,11 +15,17 @@ namespace WeiboMonitor.API
 
         public static string GenerateCookie()
         {
-            if(string.IsNullOrEmpty(SubToken))
+            if (string.IsNullOrEmpty(SubToken))
             {
                 return "";
             }
             return $"SUB={SubToken};SUBP={SubpToken};";
+        }
+
+        public static void SetCookie(string sub, string subp)
+        {
+            SubToken = sub;
+            SubpToken = subp;
         }
 
         public static bool UpdateToken()
@@ -33,6 +40,9 @@ namespace WeiboMonitor.API
                 {
                     SubToken = sub;
                     SubpToken = subp;
+
+                    Config.Instance.SetConfig("CurrentCookie_Sub", sub);
+                    Config.Instance.SetConfig("CurrentCookie_Subp", subp);
                 }
                 return result && CrossDomainBoardcast(sub, subp);
             }
@@ -45,8 +55,8 @@ namespace WeiboMonitor.API
 
         private static bool GetTID(out string tid, out string confidence)
         {
-            tid = null; 
-            confidence = null ;
+            tid = null;
+            confidence = null;
             string url = "https://passport.weibo.com/visitor/genvisitor";
             var formContent = new FormUrlEncodedContent(new[]
             {
@@ -57,7 +67,7 @@ namespace WeiboMonitor.API
             if (string.IsNullOrEmpty(result) is false && result.StartsWith("window"))
             {
                 var match = Regex.Match(result, "{.*}");
-                if(match.Groups.Count == 0) 
+                if (match.Groups.Count == 0)
                 {
                     LogHelper.Info("GetTID", $"Update Fail: {result}", false);
                     return false;
