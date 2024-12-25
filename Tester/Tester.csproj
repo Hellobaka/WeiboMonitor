@@ -8,7 +8,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\WeiboMonitor\WeiboMonitor.csproj" />
+    <ProjectReference Include="..\WeiboMonitor-netframework\WeiboMonitor-netframework.csproj" />
   </ItemGroup>
 
 </Project>
