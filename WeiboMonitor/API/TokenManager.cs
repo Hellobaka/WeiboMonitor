@@ -66,7 +66,7 @@ namespace WeiboMonitor.API
                 if (json["retcode"] != null && json["retcode"].ToString() == "20000000")
                 {
                     tid = json["data"]["tid"].ToString();
-                    confidence = json["data"]["confidence"].ToString();
+                    confidence = json["data"]["confidence"]?.ToString() ?? "0.948316066345412";
                     LogHelper.Info("UpdateToken", "TID获取成功");
                     return true;
                 }
