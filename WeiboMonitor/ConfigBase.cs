@@ -2,9 +2,6 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using WeiboMonitor;
 
 namespace WeiboMonitor_netframework
@@ -168,5 +165,4 @@ namespace WeiboMonitor_netframework
             }
         }
     }
-
 }
