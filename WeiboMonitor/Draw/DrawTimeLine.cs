@@ -7,6 +7,7 @@ using System.IO;
 using System.Linq;
 using System.Text.RegularExpressions;
 using WeiboMonitor.Model;
+using WeiboMonitor_netframework;
 
 namespace WeiboMonitor.Draw
 {
@@ -16,7 +17,7 @@ namespace WeiboMonitor.Draw
         private static Font EmojiFont { get; set; } = null;
         public static string Draw(TimeLine_Object item)
         {
-            Directory.CreateDirectory(Path.Combine(UpdateChecker.PicPath, "Weibo"));
+            Directory.CreateDirectory(Path.Combine(Config.PicSaveBasePath, "Weibo"));
             using Bitmap background = new(632, 10000);
             background.SetResolution(96, 96);
             using Graphics g = Graphics.FromImage(background);
@@ -42,13 +43,13 @@ namespace WeiboMonitor.Draw
             graphicsMain.DrawImage(background, new RectangleF(10, 10, background.Width, point.Y), new RectangleF(0, 0, background.Width, point.Y), GraphicsUnit.Pixel);
 
             string filename = $"{item.id}.png";
-            main.Save(Path.Combine(UpdateChecker.PicPath, "Weibo", filename));
+            main.Save(Path.Combine(Config.PicSaveBasePath, "Weibo", filename));
             return Path.Combine("Weibo", filename);
         }
 
         private static void DrawAvatar(TimeLine_Object item, Graphics g, ref PointF point)
         {
-            using Bitmap avatar = (Bitmap)Image.FromFile(Path.Combine(Path.Combine(UpdateChecker.BasePath, "tmp"),
+            using Bitmap avatar = (Bitmap)Image.FromFile(Path.Combine(Path.Combine(Config.BaseDirectory, "tmp"),
                 item.user.avatar_large.GetFileNameFromURL()));
             using Image round = new Bitmap(avatar.Width, avatar.Height);
             using Graphics roundGraphics = Graphics.FromImage(round);
@@ -89,7 +90,7 @@ namespace WeiboMonitor.Draw
                 {
                     // 表情元素
                     point = new PointF(point.X + 2, point.Y);
-                    using Bitmap img = (Bitmap)Image.FromFile(Path.Combine(Path.Combine(UpdateChecker.BasePath, "tmp"), c.ImageURL.GetFileNameFromURL()));
+                    using Bitmap img = (Bitmap)Image.FromFile(Path.Combine(Path.Combine(Config.BaseDirectory, "tmp"), c.ImageURL.GetFileNameFromURL()));
                     g.DrawImage(img, point.X, point.Y, 20, 20);
                     point = new PointF(point.X + 20, point.Y);
                 }
@@ -111,7 +112,7 @@ namespace WeiboMonitor.Draw
             point = new PointF(startX, point.Y + 10);
             if (item.pic_info.Length == 1)
             {
-                using Bitmap pic = (Bitmap)Image.FromFile(Path.Combine(UpdateChecker.BasePath, "tmp", item.pic_info.First().large.url.GetFileNameFromURL()));
+                using Bitmap pic = (Bitmap)Image.FromFile(Path.Combine(Config.BaseDirectory, "tmp", item.pic_info.First().large.url.GetFileNameFromURL()));
                 if (pic == null)
                 {
                     LogHelper.Info("DrawMainImages", $"无效图片: {item.pic_info.First().large.url.GetFileNameFromURL()}", false);
@@ -139,7 +140,7 @@ namespace WeiboMonitor.Draw
                 int smallPicWidth = 140;
                 foreach (var i in item.pic_info)
                 {
-                    using Bitmap pic = (Bitmap)Image.FromFile(Path.Combine(UpdateChecker.BasePath, "tmp", i.large.url.GetFileNameFromURL()));
+                    using Bitmap pic = (Bitmap)Image.FromFile(Path.Combine(Config.BaseDirectory, "tmp", i.large.url.GetFileNameFromURL()));
                     if (pic == null)
                     {
                         LogHelper.Info("DrawMainImages", $"无效图片: {i.large.url.GetFileNameFromURL()}", false);
@@ -184,7 +185,7 @@ namespace WeiboMonitor.Draw
                 {
                     return;
                 }
-                using Bitmap videoPic = (Bitmap)Image.FromFile(Path.Combine(UpdateChecker.BasePath, "tmp", item.page_info.pic_info.pic_big.url.GetFileNameFromURL()));
+                using Bitmap videoPic = (Bitmap)Image.FromFile(Path.Combine(Config.BaseDirectory, "tmp", item.page_info.pic_info.pic_big.url.GetFileNameFromURL()));
                 int height = videoPic.Height;
                 int width = videoPic.Width;
                 RectangleF originalRect = new(0, 0, videoPic.Width, videoPic.Height);
@@ -216,7 +217,7 @@ namespace WeiboMonitor.Draw
             }
             else
             {
-                using Bitmap articlePic = (Bitmap)Image.FromFile(Path.Combine(UpdateChecker.BasePath, "tmp", item.page_info.pic_info.pic_big.url.GetFileNameFromURL()));
+                using Bitmap articlePic = (Bitmap)Image.FromFile(Path.Combine(Config.BaseDirectory, "tmp", item.page_info.pic_info.pic_big.url.GetFileNameFromURL()));
                 int height = articlePic.Height;
                 int width = articlePic.Width;
                 RectangleF originalRect = new(0, 0, articlePic.Width, articlePic.Height);
@@ -262,7 +263,7 @@ namespace WeiboMonitor.Draw
             backgroundGraphics.InterpolationMode = InterpolationMode.HighQualityBilinear;
             PointF internalPoint = new PointF(0, 0);
             // avatar
-            using Bitmap avatar = (Bitmap)Image.FromFile(Path.Combine(Path.Combine(UpdateChecker.BasePath, "tmp"),
+            using Bitmap avatar = (Bitmap)Image.FromFile(Path.Combine(Path.Combine(Config.BaseDirectory, "tmp"),
                 item.retweeted_status.user.avatar_large.GetFileNameFromURL()));
             using Image round = new Bitmap(avatar.Width, avatar.Height);
             using Graphics roundGraphics = Graphics.FromImage(round);
@@ -295,21 +296,21 @@ namespace WeiboMonitor.Draw
             int like = item.attitudes_count;
             using Font font = new("Microsoft YaHei", 12);
             // 转发
-            using Bitmap forwardImage = (Bitmap)Image.FromFile(Path.Combine(UpdateChecker.BasePath, "Assets", "forward.png"));
+            using Bitmap forwardImage = (Bitmap)Image.FromFile(Path.Combine(Config.BaseDirectory, "Assets", "forward.png"));
             point = new(startX, point.Y + 10);
             g.DrawImage(forwardImage, point.X, point.Y, 16, 16);
             point = new(point.X + 16 + 4, point.Y - 2);
             var size = g.MeasureString(retweet.ToString(), font);
             g.DrawString(retweet.ToString(), font, new SolidBrush(Color.FromArgb(109, 117, 122)), point);
             // 评论
-            using Bitmap commentImage = (Bitmap)Image.FromFile(Path.Combine(UpdateChecker.BasePath, "Assets", "comment.png"));
+            using Bitmap commentImage = (Bitmap)Image.FromFile(Path.Combine(Config.BaseDirectory, "Assets", "comment.png"));
             point = new(point.X + 20 + size.Width, point.Y + 2);
             g.DrawImage(commentImage, point.X, point.Y, 16, 16);
             point = new(point.X + 20, point.Y - 2);
             size = g.MeasureString(comment.ToString(), font);
             g.DrawString(comment.ToString(), font, new SolidBrush(Color.FromArgb(109, 117, 122)), point);
             // 点赞
-            using Bitmap likeImage = (Bitmap)Image.FromFile(Path.Combine(UpdateChecker.BasePath, "Assets", "like.png"));
+            using Bitmap likeImage = (Bitmap)Image.FromFile(Path.Combine(Config.BaseDirectory, "Assets", "like.png"));
             point = new(point.X + 20 + size.Width, point.Y + 2);
             g.DrawImage(likeImage, point.X, point.Y, 16, 16);
             point = new(point.X + 20, point.Y - 2);
@@ -329,7 +330,7 @@ namespace WeiboMonitor.Draw
                     string emoji = text.Substring(i, 2);
                     if (EmojiFontCollection.Families.Length == 0)
                     {
-                        EmojiFontCollection.AddFontFile(Path.Combine(UpdateChecker.BasePath, "Assets", "seguiemj.ttf"));
+                        EmojiFontCollection.AddFontFile(Path.Combine(Config.BaseDirectory, "Assets", "seguiemj.ttf"));
                         EmojiFont = new Font(EmojiFontCollection.Families[0], 12);
                     }
                     var charSize = g.MeasureString(emoji, EmojiFont);

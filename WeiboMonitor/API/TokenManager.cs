@@ -2,18 +2,15 @@ using Newtonsoft.Json.Linq;
 using System;
 using System.Collections.Generic;
 using System.Net.Http;
-using System.Runtime.InteropServices.ComTypes;
 using System.Text.RegularExpressions;
-using System.Web;
-using System.Xml.Linq;
 
 namespace WeiboMonitor.API
 {
     public static class TokenManager
     {
-        public static string SubToken { get; set; } = "";
+        private static string SubToken { get; set; } = "";
 
-        public static string SubpToken { get; set; } = "";
+        private static string SubpToken { get; set; } = "";
 
         public static string GenerateCookie()
         {
