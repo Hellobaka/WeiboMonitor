@@ -104,7 +104,7 @@ namespace WeiboMonitor.API
                 float imgWidth = elementWidth;
                 float imgHeight = videoPic.Height / (videoPic.Width / imgWidth);
                 img.DrawImage(videoPic, new() { Location = point, Size = new(imgWidth, imgHeight) });
-                img.DrawRectangle(new SKRect(point.X, point.Y + imgHeight - 40, imgWidth, 40), SKColors.Black, SKColors.Black, 0);
+                img.DrawRectangle(new() { Location = new SKPoint(point.X, point.Y + imgHeight - 40), Size = new SKSize(imgWidth, 40) }, SKColors.Black, SKColors.Black, 0);
 
                 img.DrawText(item.page_info.media_info.online_users, Painting.Anywhere, new SKPoint(point.X + 10, point.Y + imgHeight - 30), SKColors.White, BodyFontSize);
                 string timeString = ParseTimeDuration2TimeString(item.page_info.media_info.playback_list.First()?.play_info?.duration);
@@ -119,7 +119,7 @@ namespace WeiboMonitor.API
                 float imgWidth = elementWidth;
                 float imgHeight = articlePic.Height / (articlePic.Width / imgWidth);
                 img.DrawImage(articlePic, new() { Location = point, Size = new(imgWidth, imgHeight) });
-                img.DrawRectangle(new SKRect(point.X, point.Y + imgHeight - 40, imgWidth, 40), SKColors.Black, SKColors.Black, 0);
+                img.DrawRectangle(new() { Location = new SKPoint(point.X, point.Y + imgHeight - 40), Size = new SKSize(imgWidth, 40) }, SKColors.Black, SKColors.Black, 0);
 
                 img.DrawText(item.page_info.content1, Painting.Anywhere, new SKPoint(initialPoint.X + 10, initialPoint.Y + imgHeight - 30), SKColors.White);
 
